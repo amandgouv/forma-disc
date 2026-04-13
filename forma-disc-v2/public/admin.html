@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · DISC F.O.R.M.A</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+  :root {
+    --bg:#0D1117; --surface:#161B22; --surface2:#1C2330; --border:#2D3748;
+    --text:#E6EDF3; --muted:#7D8590; --faint:#3D4451;
+    --D:#E8841A; --I:#4ADE80; --S:#60A5FA; --C:#A78BFA;
+    --D-bg:#1E1208; --I-bg:#0A1F10; --S-bg:#0A1525; --C-bg:#130E24;
+    --green:#1A6B3C;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+  .wrap { max-width:1000px; margin:0 auto; padding:40px 24px 80px; }
+
+  /* LOGIN */
+  #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .login-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px; max-width:400px; width:100%; }
+  .login-box h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px; }
+  .login-box p { font-size:13px; color:var(--muted); margin-bottom:24px; }
+  .login-input { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:13px 16px; font-size:15px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color .2s; margin-bottom:12px; }
+  .login-input:focus { border-color:var(--I); }
+  .login-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--I),#22c55e); border:none; border-radius:10px; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:#0D1117; cursor:pointer; }
+  .login-err { font-size:13px; color:#F87171; margin-top:8px; display:none; }
+
+  /* HEADER */
+  #adminScreen { display:none; }
+  .top { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:32px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); padding:5px 14px; border-radius:100px; font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px; }
+  .dot { width:6px; height:6px; background:var(--I); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  h1 { font-family:'Syne',sans-serif; font-size:clamp(22px,4vw,32px); font-weight:800; letter-spacing:-.02em; }
+  .time-label { font-size:13px; color:var(--muted); margin-top:4px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+  /* BUTTONS */
+  .btn { padding:10px 20px; border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; }
+  .btn-primary { background:var(--green); color:#fff; }
+  .btn-primary:hover { opacity:.85; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-outline:hover { border-color:var(--muted); color:var(--text); }
+  .btn-copy-all { background:var(--surface2); border:1px solid var(--border); color:var(--text); }
+  .btn-copy-all:hover { border-color:var(--I); }
+  .btn-export { background:var(--surface2); border:1px solid var(--border); color:var(--text); }
+  .btn-export:hover { border-color:var(--S); }
+  .btn.copied { background:#266640 !important; color:#fff; }
+
+  /* FILTRO TIMES */
+  .time-filter { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+  .time-btn { padding:7px 16px; border-radius:100px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:transparent; color:var(--muted); transition:all .2s; font-family:'DM Sans',sans-serif; }
+  .time-btn:hover { border-color:var(--muted); color:var(--text); }
+  .time-btn.active { border-color:var(--I); background:var(--I-bg); color:var(--I); }
+
+  /* STATS */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:32px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; text-align:center; }
+  .stat-num { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; line-height:1; margin-bottom:4px; }
+  .stat-label { font-size:12px; color:var(--muted); }
+
+  /* COMPOSITION */
+  .comp-section { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:24px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:18px; }
+  .comp-bars { display:flex; flex-direction:column; gap:14px; }
+  .comp-row { display:flex; align-items:center; gap:14px; }
+  .comp-letter { font-family:'Syne',sans-serif; font-weight:700; font-size:15px; width:18px; }
+  .comp-name { font-size:13px; color:var(--muted); width:100px; }
+  .comp-track { flex:1; height:10px; background:var(--bg); border-radius:100px; overflow:hidden; }
+  .comp-fill { height:100%; border-radius:100px; transition:width 1s cubic-bezier(.4,0,.2,1); width:0%; }
+  .comp-count { font-size:13px; font-weight:500; width:80px; text-align:right; }
+
+  /* MINI DIAGNÓSTICO */
+  .diag-section { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:24px; }
+  .diag-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:14px; }
+  .diag-text { font-size:13px; color:var(--muted); line-height:1.8; }
+  .diag-text strong { color:var(--text); font-weight:600; }
+
+  /* PEOPLE GRID */
+  .people-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; margin-bottom:32px; }
+  .person-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+  .person-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .person-letter { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; line-height:1; }
+  .person-info .person-name { font-weight:600; font-size:15px; line-height:1.2; }
+  .person-info .person-cargo { font-size:12px; color:var(--muted); margin-top:2px; }
+  .person-info .person-time { font-size:11px; color:var(--faint); margin-top:2px; }
+  .person-profile { font-size:12px; color:var(--muted); margin-bottom:12px; }
+  .score-mini { display:flex; gap:8px; margin-bottom:14px; }
+  .score-pill { flex:1; text-align:center; background:var(--bg); border-radius:6px; padding:5px; font-size:11px; font-weight:600; }
+  .person-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-sm { padding:7px 12px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .2s; font-family:'DM Sans',sans-serif; }
+  .btn-sm-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-sm-outline:hover { border-color:var(--muted); color:var(--text); }
+  .btn-sm-green { background:var(--green); color:#fff; }
+  .btn-sm-green:hover { opacity:.85; }
+  .btn-sm.copied { background:#266640 !important; color:#fff !important; border-color:#266640 !important; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; align-items:center; justify-content:center; padding:24px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:640px; width:100%; max-height:80vh; overflow-y:auto; padding:28px; }
+  .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .modal-head h3 { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+  .close-btn { background:transparent; border:1px solid var(--border); border-radius:8px; padding:6px 12px; color:var(--muted); cursor:pointer; font-size:13px; font-family:'DM Sans',sans-serif; }
+  .close-btn:hover { color:var(--text); }
+  .skill-text { font-size:13px; color:var(--muted); line-height:1.7; font-family:monospace; white-space:pre-wrap; word-break:break-word; background:var(--bg); border-radius:10px; padding:18px; margin-top:14px; }
+  .all-skills-text { font-size:12px; color:var(--muted); line-height:1.7; font-family:monospace; white-space:pre-wrap; word-break:break-word; background:var(--bg); border-radius:10px; padding:18px; margin-top:14px; max-height:400px; overflow-y:auto; }
+
+  /* EMPTY / LOADING */
+  .empty { text-align:center; padding:60px 24px; color:var(--muted); }
+  .empty h3 { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .loading { text-align:center; padding:60px; color:var(--muted); font-size:14px; }
+  .ts { font-size:11px; color:var(--faint); margin-top:8px; }
+
+  @media(max-width:600px){
+    .top{flex-direction:column;}
+    .stats{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>Admin · DISC F.O.R.M.A</h2>
+    <p>Acesso restrito. Digite sua senha para entrar.</p>
+    <input class="login-input" type="password" id="loginInput" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar →</button>
+    <p class="login-err" id="loginErr">Senha incorreta.</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminScreen">
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <div class="badge"><span class="dot"></span>Admin · DISC F.O.R.M.A</div>
+      <h1 id="adminTitle">Composição do time</h1>
+      <p class="time-label" id="adminTimeLabel"></p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline" onclick="load()">↻ Atualizar</button>
+      <button class="btn btn-export" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="btn btn-copy-all" id="copyAllBtn" onclick="copyAll()">Copiar todos os mini skills</button>
+    </div>
+  </div>
+
+  <div id="timeFilterWrap" style="display:none">
+    <div class="time-filter" id="timeFilter"></div>
+  </div>
+
+  <div id="statsRow" class="stats" style="display:none">
+    <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">participantes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--D)" id="statD">0</div><div class="stat-label">Dominância (D)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--I)" id="statI">0</div><div class="stat-label">Influência (I)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--S)" id="statS">0</div><div class="stat-label">Estabilidade (S)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--C)" id="statC">0</div><div class="stat-label">Conformidade (C)</div></div>
+  </div>
+
+  <div class="comp-section" id="compSection" style="display:none">
+    <div class="section-title">Distribuição do grupo</div>
+    <div class="comp-bars" id="compBars"></div>
+  </div>
+
+  <div class="diag-section" id="diagSection" style="display:none">
+    <div class="diag-title">🧠 Mini diagnóstico do time</div>
+    <div class="diag-text" id="diagText"></div>
+  </div>
+
+  <div id="mainContent"><div class="loading">Carregando resultados...</div></div>
+
+</div>
+</div>
+
+<!-- SKILL MODAL -->
+<div class="modal-overlay" id="skillModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalName">Mini Skill</h3>
+      <button class="close-btn" onclick="closeModal()">Fechar</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:4px" onclick="copyModalSkill()">Copiar mini skill</button>
+    <div class="skill-text" id="modalSkillText"></div>
+  </div>
+</div>
+
+<!-- ALL SKILLS MODAL -->
+<div class="modal-overlay" id="allModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Todos os mini skills</h3>
+      <button class="close-btn" onclick="closeAllModal()">Fechar</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:4px" onclick="copyAllText()">Copiar tudo</button>
+    <div class="all-skills-text" id="allSkillsText"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA4VvgNBIchcRfrE5HS-S3aZ0QGh1EwiLE",
+  authDomain: "forma-disc.firebaseapp.com",
+  projectId: "forma-disc",
+  storageBucket: "forma-disc.firebasestorage.app",
+  messagingSenderId: "718631290956",
+  appId: "1:718631290956:web:e9f633de1358fbbb358ce9"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ─── SENHAS E ACESSOS ────────────────────────────────────────────────────────
+const ACESSOS = {
+  'Waid@2025#disc': null, // master — vê tudo
+  'gc-47rx':  ['Gente & Cultura'],
+  'com-83kw': ['Comercial'],
+  'fin-29qm': ['Financeiro'],
+  'mkt-61tz': ['Marketing'],
+  'ops-94vb': ['Operações','Suporte','Produto','Sucesso do Cliente','Implantação'],
+  'par-37nh': ['Parcerias'],
+  'cs-52jp':  ['Sucesso do Cliente'],
+  'sup-18yd': ['Suporte'],
+  'prd-76fs': ['Produto'],
+  'eng-43cw': ['Engenharia'],
+};
+
+const DISC_NAMES={D:"Dominância",I:"Influência",S:"Estabilidade",C:"Conformidade"};
+const DISC_HEX={D:"#E8841A",I:"#4ADE80",S:"#60A5FA",C:"#A78BFA"};
+const DISC_HEX_LOCAL={D:"#E8841A",I:"#4ADE80",S:"#60A5FA",C:"#A78BFA"};
+const DISC_NAMES_LOCAL={D:"Dominância",I:"Influência",S:"Estabilidade",C:"Conformidade"};
+
+let allData = [];
+let currentSkill = '';
+let timesPermitidos = null;
+let filtroAtivo = null; // null = todos
+
+// ─── LOGIN ───────────────────────────────────────────────────────────────────
+function doLogin() {
+  const senha = document.getElementById('loginInput').value.trim();
+  if (ACESSOS.hasOwnProperty(senha)) {
+    timesPermitidos = ACESSOS[senha];
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminScreen').style.display = 'block';
+    if (timesPermitidos === null) {
+      document.getElementById('adminTimeLabel').textContent = 'Acesso master — todos os times';
+    } else {
+      document.getElementById('adminTimeLabel').textContent = 'Times: ' + timesPermitidos.join(', ');
+    }
+    // Mostrar filtro só se tiver mais de 1 time
+    if (timesPermitidos && timesPermitidos.length > 1) {
+      const wrap = document.getElementById('timeFilterWrap');
+      const filterDiv = document.getElementById('timeFilter');
+      wrap.style.display = 'block';
+      // Botão "Todos"
+      const btnTodos = document.createElement('button');
+      btnTodos.className = 'time-btn active';
+      btnTodos.textContent = 'Todos';
+      btnTodos.onclick = () => setFiltroTime(null);
+      filterDiv.appendChild(btnTodos);
+      // Botão por time
+      timesPermitidos.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'time-btn';
+        btn.textContent = t;
+        btn.onclick = () => setFiltroTime(t);
+        filterDiv.appendChild(btn);
+      });
+    }
+    load();
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+function setFiltroTime(time) {
+  filtroAtivo = time;
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.classList.toggle('active',
+      (time === null && btn.textContent === 'Todos') ||
+      btn.textContent === time
+    );
+  });
+  const base = timesPermitidos ? allData.filter(r => timesPermitidos.includes(r.time)) : allData;
+  const dados = filtroAtivo ? base.filter(r => r.time === filtroAtivo) : base;
+  render(dados);
+}
+
+// ─── LOAD ────────────────────────────────────────────────────────────────────
+async function load() {
+  document.getElementById('mainContent').innerHTML='<div class="loading">Carregando...</div>';
+  try {
+    const q = query(collection(db, 'disc_results'), orderBy('created_at', 'asc'));
+    const snap = await getDocs(q);
+    allData = snap.docs.map(d => ({
+      id: d.id, ...d.data(),
+      created_at: d.data().created_at?.toDate?.() || new Date()
+    }));
+    // Filtrar por times permitidos
+    const base = timesPermitidos
+      ? allData.filter(r => timesPermitidos.includes(r.time))
+      : allData;
+    const dados = filtroAtivo ? base.filter(r => r.time === filtroAtivo) : base;
+    render(dados);
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML='<div class="loading">Erro ao carregar. Tente novamente.</div>';
+    console.error(e);
+  }
+}
+
+// ─── MINI DIAGNÓSTICO ────────────────────────────────────────────────────────
+function gerarDiagnostico(data) {
+  const counts = {D:0,I:0,S:0,C:0};
+  data.forEach(r => counts[r.dominant]++);
+  const total = data.length;
+  if (total === 0) return '';
+
+  const dominante = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  const pctD = Math.round(counts.D/total*100);
+  const pctI = Math.round(counts.I/total*100);
+  const pctS = Math.round(counts.S/total*100);
+  const pctC = Math.round(counts.C/total*100);
+
+  const ausentes = ['D','I','S','C'].filter(d => counts[d] === 0).map(d => DISC_NAMES[d]);
+  const fortes = Object.entries(counts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+  let diag = `<strong>Perfil dominante do time:</strong> ${DISC_NAMES[fortes[0][0]]} (${Math.round(fortes[0][1]/total*100)}%)<br><br>`;
+
+  if (pctD >= 60) {
+    diag += `Este é um time de alta execução. Decide rápido, age com autonomia e vai direto ao resultado. O risco está em atropelar processos e pessoas — especialmente quem precisa de mais contexto antes de agir.<br><br>`;
+  } else if (pctI >= 40) {
+    diag += `Time com forte energia relacional. Engaja bem, gera ideias com facilidade e tem boa presença. O risco está em prometer mais do que entrega e perder o fio do acompanhamento.<br><br>`;
+  } else if (pctS >= 40) {
+    diag += `Time com perfil colaborativo e consistente. Confiável e cuidadoso com as pessoas — mas pode ter dificuldade em se adaptar rápido a mudanças ou confrontar diretamente quando necessário.<br><br>`;
+  } else if (pctC >= 40) {
+    diag += `Time analítico e criterioso. Entrega com qualidade e pensa antes de agir — mas pode travar em excesso de análise quando a decisão precisa ser tomada com o que se tem.<br><br>`;
+  } else {
+    diag += `Time com perfil equilibrado entre os estilos. Isso é uma força — mas também pode gerar tensão se os perfis não souberem se complementar conscientemente.<br><br>`;
+  }
+
+  if (ausentes.length > 0) {
+    diag += `<strong>Lacunas naturais:</strong> ${ausentes.join(' e ')} ${ausentes.length > 1 ? 'não estão' : 'não está'} representado${ausentes.length > 1 ? 's' : ''} no time. Isso significa que as qualidades desses perfis (`;
+    const descLacunas = ausentes.map(n => {
+      if (n==='Dominância') return 'decisão rápida e foco em resultado';
+      if (n==='Influência') return 'engajamento e energia relacional';
+      if (n==='Estabilidade') return 'consistência e cuidado com pessoas';
+      return 'rigor analítico e atenção a riscos';
+    });
+    diag += descLacunas.join('; ') + `) precisam ser cultivadas intencionalmente.<br><br>`;
+  }
+
+  if (total >= 3) {
+    diag += `<strong>Como esse time usa IA:</strong> `;
+    if (pctD >= 50) {
+      diag += `A tendência é usar IA para acelerar execução. A oportunidade está em usá-la também para checar ângulos antes de decidir — pedindo ao Claude "qual é o maior risco dessa abordagem?".`;
+    } else if (pctI >= 40) {
+      diag += `A tendência é usar IA para criar e explorar. A oportunidade está em usar IA também para sistematizar — transformando boas ideias em planos concretos e replicáveis.`;
+    } else if (pctS >= 40) {
+      diag += `A tendência é usar IA de forma estruturada e segura. A oportunidade está em usar IA para antecipar conversas difíceis e preparar feedbacks com mais clareza.`;
+    } else {
+      diag += `A tendência é usar IA para análise e verificação. A oportunidade está em usar IA para comunicar análises de forma mais acessível — simplificando sem perder a essência.`;
+    }
+  }
+
+  return diag;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render(data) {
+  if (!data || data.length === 0) {
+    document.getElementById('mainContent').innerHTML=`<div class="empty"><h3>Nenhum resultado ainda</h3><p>Compartilhe o link do assessment com o time.</p></div>`;
+    document.getElementById('statsRow').style.display='none';
+    document.getElementById('compSection').style.display='none';
+    document.getElementById('diagSection').style.display='none';
+    return;
+  }
+
+  const counts={D:0,I:0,S:0,C:0};
+  data.forEach(r=>counts[r.dominant]++);
+  document.getElementById('statTotal').textContent=data.length;
+  document.getElementById('statD').textContent=counts.D;
+  document.getElementById('statI').textContent=counts.I;
+  document.getElementById('statS').textContent=counts.S;
+  document.getElementById('statC').textContent=counts.C;
+  document.getElementById('statsRow').style.display='grid';
+
+  // Barra de composição
+  document.getElementById('compSection').style.display='block';
+  const bars = document.getElementById('compBars');
+  bars.innerHTML='';
+  ['D','I','S','C'].forEach(d=>{
+    const pct=Math.round((counts[d]/data.length)*100);
+    bars.innerHTML+=`
+      <div class="comp-row">
+        <span class="comp-letter" style="color:${DISC_HEX[d]}">${d}</span>
+        <span class="comp-name">${DISC_NAMES[d]}</span>
+        <div class="comp-track"><div class="comp-fill" id="cbar${d}" style="background:${DISC_HEX[d]}"></div></div>
+        <span class="comp-count" style="color:${DISC_HEX[d]}">${counts[d]} pessoa${counts[d]!==1?'s':''} · ${pct}%</span>
+      </div>`;
+  });
+  setTimeout(()=>['D','I','S','C'].forEach(d=>{
+    const el=document.getElementById('cbar'+d);
+    if(el) el.style.width=Math.round((counts[d]/data.length)*100)+'%';
+  }),200);
+
+  // Mini diagnóstico
+  if (data.length >= 2) {
+    document.getElementById('diagSection').style.display='block';
+    document.getElementById('diagText').innerHTML = gerarDiagnostico(data);
+  }
+
+  // Grid de pessoas
+  const grid = document.createElement('div');
+  grid.className='people-grid';
+  data.forEach((r,i)=>{
+    const card = document.createElement('div');
+    card.className='person-card';
+    const ts = r.created_at instanceof Date
+      ? r.created_at.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    card.innerHTML=`
+      <div class="person-top">
+        <div class="person-letter" style="color:${DISC_HEX[r.dominant]}">${r.dominant}</div>
+        <div class="person-info">
+          <div class="person-name">${r.name}</div>
+          <div class="person-cargo">${r.cargo}</div>
+          ${r.time ? `<div class="person-time">${r.time}</div>` : ''}
+        </div>
+      </div>
+      <div class="person-profile">
+        <span style="color:${DISC_HEX[r.dominant]};font-weight:600">${DISC_NAMES[r.dominant]}</span>
+        <span style="color:var(--muted)"> + </span>
+        <span style="color:${DISC_HEX[r.secondary]}">${DISC_NAMES[r.secondary]}</span>
+      </div>
+      <div class="score-mini">
+        <div class="score-pill" style="color:${DISC_HEX['D']}">D ${r.score_d}</div>
+        <div class="score-pill" style="color:${DISC_HEX['I']}">I ${r.score_i}</div>
+        <div class="score-pill" style="color:${DISC_HEX['S']}">S ${r.score_s}</div>
+        <div class="score-pill" style="color:${DISC_HEX['C']}">C ${r.score_c}</div>
+      </div>
+      <div class="person-actions">
+        <button class="btn-sm btn-sm-outline" onclick="showSkill(${i})">Ver mini skill</button>
+        <button class="btn-sm btn-sm-green" id="copybtn${i}" onclick="copyPersonSkill(${i})">Copiar skill</button>
+        <button class="btn-sm" style="background:#3D2478;color:#fff;border:none;" onclick="downloadReport(${i})">⬇ Relatório</button>
+      </div>
+      <div class="ts">${ts}</div>
+    `;
+    grid.appendChild(card);
+  });
+  document.getElementById('mainContent').innerHTML='';
+  document.getElementById('mainContent').appendChild(grid);
+}
+
+// ─── EXPORTAR CSV ────────────────────────────────────────────────────────────
+function exportCSV() {
+  const dados = timesPermitidos
+    ? allData.filter(r => timesPermitidos.includes(r.time))
+    : allData;
+  if (!dados.length) return alert('Nenhum dado para exportar.');
+  const header = ['Nome','Cargo','Time','Dominante','Secundário','D','I','S','C','Data'];
+  const rows = dados.map(r => [
+    `"${r.name}"`,`"${r.cargo}"`,`"${r.time||''}"`,r.dominant,r.secondary,
+    r.score_d,r.score_i,r.score_s,r.score_c,
+    r.created_at instanceof Date ? r.created_at.toLocaleDateString('pt-BR') : ''
+  ]);
+  const csv = [header, ...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='DISC_FORMA.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ─── DOWNLOAD REPORT ─────────────────────────────────────────────────────────
+function downloadReport(i) {
+  const dados = timesPermitidos
+    ? allData.filter(r => timesPermitidos.includes(r.time))
+    : allData;
+  const r = dados[i];
+  const total = r.score_d+r.score_i+r.score_s+r.score_c;
+  const pct = {
+    D:Math.round(r.score_d/total*100),I:Math.round(r.score_i/total*100),
+    S:Math.round(r.score_s/total*100),C:Math.round(r.score_c/total*100)
+  };
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>DISC FORMA · ${r.name}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+:root{--bg:#0D1117;--surface:#161B22;--border:#2D3748;--text:#E6EDF3;--muted:#7D8590;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:32px 28px 60px;max-width:700px;margin:0 auto;}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);padding:5px 14px;border-radius:100px;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px;}
+.hero{display:flex;align-items:flex-start;gap:20px;margin-bottom:24px;}
+.big{font-family:'Syne',sans-serif;font-size:72px;font-weight:800;line-height:1;flex-shrink:0;}
+.info .who{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.info h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;margin-bottom:8px;}
+.info .tag{font-size:14px;color:var(--muted);font-style:italic;line-height:1.6;}
+.scores{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;}
+.sr{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.sl{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;width:18px;}
+.sn{font-size:12px;color:var(--muted);width:90px;}
+.tr{flex:1;height:7px;background:var(--bg);border-radius:100px;overflow:hidden;}
+.fi{height:100%;border-radius:100px;}
+.sp{font-size:12px;font-weight:500;width:34px;text-align:right;}
+.sb{background:#1C2330;border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;}
+.sbh{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px;}
+.st{font-size:13px;color:var(--muted);line-height:1.7;font-family:monospace;white-space:pre-wrap;word-break:break-word;}
+.foot{text-align:center;font-size:11px;color:#3D4451;margin-top:40px;padding-top:20px;border-top:1px solid var(--border);}
+@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{background:#0D1117!important;}@page{margin:12mm;size:A4;}}
+</style></head><body>
+<div class="badge">F.O.R.M.A · Resultado DISC</div>
+<div class="hero">
+  <div class="big" style="color:${DISC_HEX_LOCAL[r.dominant]}">${r.dominant}</div>
+  <div class="info">
+    <div class="who">${r.cargo}${r.time ? ' · '+r.time : ''}</div>
+    <h2 style="color:${DISC_HEX_LOCAL[r.dominant]}">${r.name}</h2>
+    <div class="tag">Perfil dominante: ${DISC_NAMES_LOCAL[r.dominant]}</div>
+  </div>
+</div>
+<div class="scores">
+  ${['D','I','S','C'].map(d=>`<div class="sr">
+    <span class="sl" style="color:${DISC_HEX_LOCAL[d]}">${d}</span>
+    <span class="sn">${DISC_NAMES_LOCAL[d]}</span>
+    <div class="tr"><div class="fi" style="background:${DISC_HEX_LOCAL[d]};width:${pct[d]}%"></div></div>
+    <span class="sp" style="color:${DISC_HEX_LOCAL[d]}">${pct[d]}%</span>
+  </div>`).join('')}
+</div>
+<div class="sb"><div class="sbh">🧠 Mini Skill para o Claude</div><div class="st">${r.mini_skill||''}</div></div>
+<div class="foot">Gerado no DISC F.O.R.M.A · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+</body></html>`;
+  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`DISC_FORMA_${r.name.replace(/\s+/g,'_')}.html`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function showSkill(i) {
+  const dados = timesPermitidos ? allData.filter(r=>timesPermitidos.includes(r.time)) : allData;
+  const r = dados[i];
+  document.getElementById('modalName').textContent=`${r.name} · ${DISC_NAMES[r.dominant]}`;
+  document.getElementById('modalSkillText').textContent=r.mini_skill||'';
+  currentSkill=r.mini_skill||'';
+  document.getElementById('skillModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('skillModal').classList.remove('open'); }
+
+function copyModalSkill() {
+  navigator.clipboard.writeText(currentSkill).then(()=>{
+    const btn=event.target;
+    btn.textContent='Copiado ✓';
+    setTimeout(()=>btn.textContent='Copiar mini skill',2000);
+  });
+}
+
+function copyPersonSkill(i) {
+  const dados = timesPermitidos ? allData.filter(r=>timesPermitidos.includes(r.time)) : allData;
+  const r=dados[i];
+  navigator.clipboard.writeText(r.mini_skill||'').then(()=>{
+    const btn=document.getElementById('copybtn'+i);
+    btn.textContent='Copiado ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copiar skill';btn.classList.remove('copied');},2500);
+  });
+}
+
+function copyAll() {
+  const dados = timesPermitidos ? allData.filter(r=>timesPermitidos.includes(r.time)) : allData;
+  if(!dados.length) return;
+  const all=dados.map(r=>`${'='.repeat(50)}\n${r.mini_skill||''}`).join('\n\n');
+  document.getElementById('allSkillsText').textContent=all;
+  document.getElementById('allModal').classList.add('open');
+}
+
+function closeAllModal() { document.getElementById('allModal').classList.remove('open'); }
+
+function copyAllText() {
+  const text=document.getElementById('allSkillsText').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=event.target;
+    btn.textContent='Copiado ✓';
+    setTimeout(()=>btn.textContent='Copiar tudo',2000);
+  });
+}
+
+document.getElementById('skillModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('allModal').addEventListener('click',function(e){if(e.target===this)closeAllModal();});
+
+// Expor funções para onclicks
+window.doLogin = doLogin;
+window.load = load;
+window.setFiltroTime = setFiltroTime;
+window.exportCSV = exportCSV;
+window.copyAll = copyAll;
+window.closeModal = closeModal;
+window.copyModalSkill = copyModalSkill;
+window.closeAllModal = closeAllModal;
+window.copyAllText = copyAllText;
+window.showSkill = showSkill;
+window.copyPersonSkill = copyPersonSkill;
+window.downloadReport = downloadReport;
+</script>
+</body>
+</html>
